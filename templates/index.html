@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gunpla Recommendation System</title>
+</head>
+<body>
+<h1>Gunpla Kit Recommender</h1>
+
+<form method="POST">
+    <h3>Filter by Grade</h3>
+    <select id="gradeFilter" name="gradeFilter">
+        <option value="HG">High Grade</option>
+        <option value="MG">Master Grade</option>
+        <option value="RG">Real Grade</option>
+        <option value="PG">Perfect Grade</option>
+        <option value="SD">SD</option>
+        <option value="EG">Entry Grade</option>
+    </select>
+    <input list="suggestions" id="built" name="userCompare" size="100">
+    <button type="submit">Add to Collection</button>
+</form>
+    <script>
+        document.getElementById("addToCollection").addEventListener("click", function () {
+        let value = document.getElementById("built").value
+                })
+            });
+    </script>
+
+    <datalist id="suggestions"></datalist>
+
+    <script>
+        document.getElementById("built").addEventListener("input", function () {
+            const query = this.value;
+            const grade = document.getElementById("gradeFilter").value
+            fetch(`/search?q=${encodeURIComponent(query)}&g=${encodeURIComponent(grade)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const datalist = document.getElementById("suggestions");
+                    datalist.innerHTML = "";
+                    data.forEach(item => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        datalist.appendChild(option);
+                    });
+                });
+        });
+    </script>
+
+
+<h2>Your Collection</h2>
+<ul>
+    {% for kit in userKits %}
+    <li>{{ kit }}</li>
+    {% endfor %}
+</ul>
+
+    <button id="clearButton">Clear List</button>
+<script>
+    document.getElementById("clearButton").addEventListener("click", function () {
+        fetch(`/clear`, { method: "POST" })
+            .then(() => {
+                // Navigate to the homepage cleanly after clearing
+                window.location.href = "/";
+            });
+    });
+</script>
+
+{% if recommendations %}
+<h2>Top 5 Recommendations</h2>
+<ul>
+    {% for kit, score in recommendations %}
+    <li>{{ kit }} — Similarity Score: {{ '%.3f'|format(score) }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if userKits %}
+<h2>Top 100 Kit Breakdown</h2>
+<h3>Most Recommended Grade</h3>
+<img src="{{ url_for('static', filename='gradePie.png') }}" alt="Grade Pie Chart">
+<h3>Most Recommended Continuity</h3>
+<img src="{{ url_for('static', filename='universePie.png') }}" alt="Continuity Pie Chart">
+{% endif %}
+
+</body>
+</html>
